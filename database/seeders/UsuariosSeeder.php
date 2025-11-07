@@ -15,10 +15,20 @@ class UsuariosSeeder extends Seeder
     {
         DB::table('usuarios')->insert([
             [
+                'nombre_completo' => 'Dr. Carlos Mendoza',
+                'email' => 'carlos@dentista.com',
+                'password' => Hash::make('password123'),
+                'telefono' => '70123456',
+                'rol' => 'gerente_odontologo',
+                'activo' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
                 'nombre_completo' => 'Dr. Carlos Limachi Quispe',
                 'email' => 'dr.limachi@muelitas.com',
                 'password' => Hash::make('password123'),
-                'telefono' => '70123456',
+                'telefono' => '70123457',
                 'rol' => 'gerente_odontologo',
                 'activo' => true,
                 'created_at' => now(),
