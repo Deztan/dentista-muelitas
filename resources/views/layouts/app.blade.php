@@ -11,9 +11,43 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Cabecera superior */
+        .top-header {
+            background: linear-gradient(135deg, #f8a5c2 0%, #f78fb3 100%);
+            color: #fff;
+            padding: 0.75rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 250px; /* Empieza después del sidebar */
+            right: 0;
+            z-index: 1020;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .top-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        /* Sidebar ocupa toda la altura */
         .sidebar {
             min-height: 100vh;
+            height: 100vh;
             background: linear-gradient(180deg, #0d6efd 0%, #0a58ca 100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            overflow-y: auto;
+            z-index: 1030;
         }
         .sidebar .nav-link {
             color: rgba(255, 255, 255, 0.8);
@@ -29,13 +63,72 @@
         .sidebar .nav-link i {
             margin-right: 0.5rem;
         }
+        
+        /* Contenido principal ajustado */
+        .main-content-wrapper {
+            margin-left: 250px; /* Empieza después del sidebar */
+            margin-top: 50px; /* Espacio para la cabecera fija */
+            padding-bottom: 50px; /* Espacio para el pie fijo */
+            min-height: calc(100vh - 90px);
+        }
+        
+        /* Pie de página (no cubre el sidebar) */
+        .footer-bar {
+            background: linear-gradient(90deg, #13B28D 0%, #0e9d7a 100%);
+            color: #fff;
+            padding: 0.5rem 2rem;
+            position: fixed;
+            bottom: 0;
+            left: 250px; /* Empieza después del sidebar */
+            right: 0;
+            z-index: 1020;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+        }
+        .footer-bar .footer-left {
+            display: flex;
+            align-items: center;
+        }
+        .footer-bar .footer-right {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                min-height: auto;
+            }
+            .top-header,
+            .footer-bar {
+                left: 0;
+            }
+            .main-content-wrapper {
+                margin-left: 0;
+            }
+        }
     </style>
 </head>
 <body class="bg-light">
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse p-3">
+    <!-- Cabecera superior -->
+    <header class="top-header">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-hospital me-2" style="font-size: 1.5rem;"></i>
+            <h5>DENTISTA MUELITAS</h5>
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="me-3">{{ Auth::user()->nombre_completo }}</span>
+            <i class="bi bi-person-circle" style="font-size: 1.8rem;"></i>
+        </div>
+    </header>
+
+    <!-- Sidebar (ocupa toda la altura lateral) -->
+    <nav class="sidebar p-3">
                 <div class="text-center mb-4">
                     <h4 class="text-white">
                         <i class="bi bi-hospital"></i>
@@ -97,6 +190,19 @@
                             <i class="bi bi-receipt"></i> Facturas
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}" href="{{ route('reportes.facturas') }}">
+                            <i class="bi bi-graph-up"></i> Reportes
+                        </a>
+                    </li>
+                    
+                    @if(Auth::user()->rol === 'gerente')
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}" href="{{ route('usuarios.index') }}">
+                            <i class="bi bi-people-fill"></i> Usuarios
+                        </a>
+                    </li>
+                    @endif
                 </ul>
                 
                 <hr class="text-white-50 my-4">
@@ -118,8 +224,8 @@
                 </ul>
             </nav>
 
-            <!-- Main content -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+    <!-- Main content -->
+    <main class="px-4 py-4 main-content-wrapper">
                 <!-- Breadcrumb -->
                 @if(isset($breadcrumbs))
                 <nav aria-label="breadcrumb" class="mb-3">
@@ -168,8 +274,18 @@
                 <!-- Page Content -->
                 @yield('content')
             </main>
+
+    <!-- Pie de página -->
+    <footer class="footer-bar">
+        <div class="footer-left">
+            <span>Copyright © 2025 <strong>Dentista Muelitas</strong>. Todos los derechos reservados</span>
         </div>
-    </div>
+        <div class="footer-right">
+            <span>vistas.reportes.php</span>
+            <span>dinamico.php</span>
+            <span>index.php</span>
+        </div>
+    </footer>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

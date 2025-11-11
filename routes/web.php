@@ -7,7 +7,9 @@ use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\CitaController;
 use App\Http\Controllers\FacturaController;
 use App\Http\Controllers\ExpedienteController;
+use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\ReportesController;
 
 // ============================================
 // RUTAS DE AUTENTICACIÓN (públicas)
@@ -43,4 +45,11 @@ Route::middleware(['auth'])->group(function () {
 
     // Rutas CRUD para Expedientes
     Route::resource('expedientes', ExpedienteController::class);
+
+    // Rutas CRUD para Usuarios (solo accesible para gerente_odontologo)
+    Route::resource('usuarios', UsuarioController::class);
+
+    // Reportes
+    Route::get('/reportes/facturas', [ReportesController::class, 'facturas'])
+        ->name('reportes.facturas');
 });

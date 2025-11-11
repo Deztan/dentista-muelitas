@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->string('telefono', 20)->nullable();
-            $table->enum('rol', ['gerente_odontologo', 'asistente_directo', 'recepcionista', 'enfermera'])->default('recepcionista');
+            $table->enum('rol', ['gerente', 'odontologo', 'asistente_directo', 'recepcionista', 'enfermera'])->default('recepcionista');
             $table->boolean('activo')->default(true);
             $table->timestamps();
         });
