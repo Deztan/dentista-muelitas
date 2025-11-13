@@ -52,4 +52,9 @@ Route::middleware(['auth'])->group(function () {
     // Reportes
     Route::get('/reportes/facturas', [ReportesController::class, 'facturas'])
         ->name('reportes.facturas');
+
+    // Configuración
+    Route::get('/configuracion', function () {
+        return view('configuracion');
+    })->name('configuracion');
 });

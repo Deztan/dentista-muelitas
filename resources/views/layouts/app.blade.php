@@ -210,7 +210,7 @@
                 
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link {{ request()->routeIs('configuracion') ? 'active' : '' }}" href="{{ route('configuracion') }}">
                             <i class="bi bi-gear"></i> Configuración
                         </a>
                     </li>

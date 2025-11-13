@@ -94,19 +94,19 @@
                         </a>
                     </div>
                     <div class="col-md-3">
-                        <a href="#" class="btn btn-outline-success w-100 py-3">
+                        <a href="{{ route('citas.create') }}" class="btn btn-outline-success w-100 py-3">
                             <i class="bi bi-calendar-plus d-block" style="font-size: 2rem;"></i>
                             Nueva Cita
                         </a>
                     </div>
                     <div class="col-md-3">
-                        <a href="#" class="btn btn-outline-info w-100 py-3">
+                        <a href="{{ route('expedientes.create') }}" class="btn btn-outline-info w-100 py-3">
                             <i class="bi bi-file-earmark-medical d-block" style="font-size: 2rem;"></i>
                             Nuevo Expediente
                         </a>
                     </div>
                     <div class="col-md-3">
-                        <a href="#" class="btn btn-outline-warning w-100 py-3">
+                        <a href="{{ route('facturas.create') }}" class="btn btn-outline-warning w-100 py-3">
                             <i class="bi bi-receipt d-block" style="font-size: 2rem;"></i>
                             Nueva Factura
                         </a>
