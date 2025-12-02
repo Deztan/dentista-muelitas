@@ -68,42 +68,68 @@ class DatabaseBackup extends Command
             $mysqldumpPath = 'mysqldump';
         }
 
-        // Construir comando mysqldump
-        // Si la contraseña está vacía, no incluir el parámetro --password
-        if (empty($password)) {
-            $command = sprintf(
-                '"%s" --user=%s --host=%s --port=%s --single-transaction --routines --triggers --events --skip-comments %s > "%s" 2>&1',
-                $mysqldumpPath,
-                escapeshellarg($username),
-                escapeshellarg($host),
-                $port,
-                escapeshellarg($database),
-                $filepath
-            );
-        } else {
-            $command = sprintf(
-                '"%s" --user=%s --password=%s --host=%s --port=%s --single-transaction --routines --triggers --events --skip-comments %s > "%s" 2>&1',
-                $mysqldumpPath,
-                escapeshellarg($username),
-                escapeshellarg($password),
-                escapeshellarg($host),
-                $port,
-                escapeshellarg($database),
-                $filepath
-            );
+        // Construir comando mysqldump sin redirección (lo haremos con file_put_contents)
+        $commandArgs = [
+            '--user=' . $username,
+            '--host=' . $host,
+            '--port=' . $port,
+            '--single-transaction',
+            '--routines',
+            '--triggers',
+            '--events',
+            '--skip-comments',
+        ];
+
+        // Agregar password si existe
+        if (!empty($password)) {
+            $commandArgs[] = '--password=' . $password;
         }
+
+        // Agregar nombre de base de datos
+        $commandArgs[] = $database;
 
         // Ejecutar backup
         $this->info('📦 Exportando base de datos...');
-        $this->info("Comando: {$command}");
-        exec($command, $output, $return);
+
+        // Usar proc_open para capturar la salida directamente
+        $descriptorspec = [
+            0 => ['pipe', 'r'],  // stdin
+            1 => ['pipe', 'w'],  // stdout
+            2 => ['pipe', 'w']   // stderr
+        ];
+
+        $process = proc_open(
+            $mysqldumpPath . ' ' . implode(' ', array_map('escapeshellarg', $commandArgs)),
+            $descriptorspec,
+            $pipes
+        );
+
+        if (is_resource($process)) {
+            // Capturar la salida del dump
+            $dumpOutput = stream_get_contents($pipes[1]);
+            $errorOutput = stream_get_contents($pipes[2]);
+
+            fclose($pipes[0]);
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+
+            $return = proc_close($process);
+
+            // Guardar el dump en el archivo
+            if ($return === 0 && !empty($dumpOutput)) {
+                file_put_contents($filepath, $dumpOutput);
+            }
+        } else {
+            $return = 1;
+            $errorOutput = 'No se pudo iniciar el proceso mysqldump';
+        }
 
         if ($return !== 0 || !file_exists($filepath) || filesize($filepath) === 0) {
             $this->error('❌ Error al crear el backup');
             $this->error("Return code: {$return}");
 
-            if (!empty($output)) {
-                $this->error('Output: ' . implode("\n", $output));
+            if (isset($errorOutput) && !empty($errorOutput)) {
+                $this->error('Error output: ' . $errorOutput);
             }
 
             // Verificar si el archivo existe pero está vacío
@@ -113,7 +139,7 @@ class DatabaseBackup extends Command
             }
 
             // Log del error
-            Log::error('backups', 'Error al crear backup de base de datos', 'mysqldump falló o generó archivo vacío. Return code: ' . $return);
+            Log::error('backups', 'Error al crear backup de base de datos', 'mysqldump falló o generó archivo vacío. Return code: ' . $return . '. Error: ' . ($errorOutput ?? 'Unknown'));
 
             return Command::FAILURE;
         }

@@ -134,19 +134,58 @@ class DatabaseRestore extends Command
         }
 
         // Construir comando mysql
-        $command = sprintf(
-            '"%s" --user=%s --password=%s --host=%s --port=%s %s < "%s"',
-            $mysqlPath,
-            $username,
-            $password,
-            $host,
-            $port,
-            $database,
-            $sqlFile
+        $commandArgs = [
+            '--user=' . $username,
+            '--host=' . $host,
+            '--port=' . $port,
+        ];
+
+        // Agregar password si existe
+        if (!empty($password)) {
+            $commandArgs[] = '--password=' . $password;
+        }
+
+        // Agregar nombre de base de datos
+        $commandArgs[] = $database;
+
+        // Leer el contenido del archivo SQL
+        $sqlContent = file_get_contents($sqlFile);
+
+        if ($sqlContent === false) {
+            $this->error('❌ No se pudo leer el archivo de backup');
+            return Command::FAILURE;
+        }
+
+        // Ejecutar restauración usando proc_open
+        $descriptorspec = [
+            0 => ['pipe', 'r'],  // stdin
+            1 => ['pipe', 'w'],  // stdout
+            2 => ['pipe', 'w']   // stderr
+        ];
+
+        $process = proc_open(
+            $mysqlPath . ' ' . implode(' ', array_map('escapeshellarg', $commandArgs)),
+            $descriptorspec,
+            $pipes
         );
 
-        // Ejecutar restauración
-        exec($command, $output, $return);
+        $return = 1;
+        $errorOutput = '';
+
+        if (is_resource($process)) {
+            // Enviar el SQL al stdin
+            fwrite($pipes[0], $sqlContent);
+            fclose($pipes[0]);
+
+            // Capturar la salida
+            stream_get_contents($pipes[1]); // stdout (no lo necesitamos)
+            $errorOutput = stream_get_contents($pipes[2]);
+            
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+
+            $return = proc_close($process);
+        }
 
         // Limpiar archivo SQL temporal si era ZIP
         if (str_ends_with($filename, '.zip') && file_exists($sqlFile)) {
@@ -155,8 +194,12 @@ class DatabaseRestore extends Command
 
         if ($return !== 0) {
             $this->error('❌ Error al restaurar el backup');
+            
+            if (!empty($errorOutput)) {
+                $this->error('Error: ' . $errorOutput);
+            }
 
-            Log::error('backups', 'Error al restaurar backup', 'No se pudo ejecutar la restauración');
+            Log::error('backups', 'Error al restaurar backup', 'No se pudo ejecutar la restauración. Error: ' . $errorOutput);
 
             return Command::FAILURE;
         }
