@@ -46,35 +46,74 @@ class DatabaseBackup extends Command
         $filename = "backup_{$database}_{$timestamp}.sql";
         $filepath = $backupPath . '/' . $filename;
 
-        // Ruta de mysqldump (XAMPP)
-        $mysqldumpPath = 'C:\xampp\mysql\bin\mysqldump.exe';
+        // Determinar ruta de mysqldump
+        // En Railway/Linux usará mysqldump del PATH
+        // En Windows local intentará usar XAMPP primero
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            // Windows - intentar XAMPP primero
+            $possiblePaths = [
+                'D:\\Aplicaciones\\xampp\\mysql\\bin\\mysqldump.exe',
+                'C:\\xampp\\mysql\\bin\\mysqldump.exe',
+            ];
 
-        // Si no existe en XAMPP, buscar en PATH
-        if (!file_exists($mysqldumpPath)) {
+            $mysqldumpPath = 'mysqldump';
+            foreach ($possiblePaths as $path) {
+                if (file_exists($path)) {
+                    $mysqldumpPath = $path;
+                    break;
+                }
+            }
+        } else {
+            // Linux/Railway - usar del PATH
             $mysqldumpPath = 'mysqldump';
         }
 
         // Construir comando mysqldump
-        $command = sprintf(
-            '"%s" --user=%s --password=%s --host=%s --port=%s --single-transaction --routines --triggers --events %s > "%s"',
-            $mysqldumpPath,
-            $username,
-            $password,
-            $host,
-            $port,
-            $database,
-            $filepath
-        );
+        // Si la contraseña está vacía, no incluir el parámetro --password
+        if (empty($password)) {
+            $command = sprintf(
+                '"%s" --user=%s --host=%s --port=%s --single-transaction --routines --triggers --events --skip-comments %s > "%s" 2>&1',
+                $mysqldumpPath,
+                escapeshellarg($username),
+                escapeshellarg($host),
+                $port,
+                escapeshellarg($database),
+                $filepath
+            );
+        } else {
+            $command = sprintf(
+                '"%s" --user=%s --password=%s --host=%s --port=%s --single-transaction --routines --triggers --events --skip-comments %s > "%s" 2>&1',
+                $mysqldumpPath,
+                escapeshellarg($username),
+                escapeshellarg($password),
+                escapeshellarg($host),
+                $port,
+                escapeshellarg($database),
+                $filepath
+            );
+        }
 
         // Ejecutar backup
         $this->info('📦 Exportando base de datos...');
+        $this->info("Comando: {$command}");
         exec($command, $output, $return);
 
-        if ($return !== 0 || !file_exists($filepath)) {
+        if ($return !== 0 || !file_exists($filepath) || filesize($filepath) === 0) {
             $this->error('❌ Error al crear el backup');
+            $this->error("Return code: {$return}");
+
+            if (!empty($output)) {
+                $this->error('Output: ' . implode("\n", $output));
+            }
+
+            // Verificar si el archivo existe pero está vacío
+            if (file_exists($filepath) && filesize($filepath) === 0) {
+                $this->error('El archivo de backup está vacío (0 bytes)');
+                unlink($filepath); // Eliminar archivo vacío
+            }
 
             // Log del error
-            Log::error('backups', 'Error al crear backup de base de datos', 'No se pudo ejecutar mysqldump');
+            Log::error('backups', 'Error al crear backup de base de datos', 'mysqldump falló o generó archivo vacío. Return code: ' . $return);
 
             return Command::FAILURE;
         }

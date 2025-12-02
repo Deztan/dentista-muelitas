@@ -111,10 +111,25 @@ class DatabaseRestore extends Command
         $host = config('database.connections.mysql.host');
         $port = config('database.connections.mysql.port', 3306);
 
-        // Ruta de mysql (XAMPP)
-        $mysqlPath = 'C:\xampp\mysql\bin\mysql.exe';
+        // Determinar ruta de mysql
+        // En Railway/Linux usará mysql del PATH
+        // En Windows local intentará usar XAMPP primero
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            // Windows - intentar XAMPP primero
+            $possiblePaths = [
+                'D:\\Aplicaciones\\xampp\\mysql\\bin\\mysql.exe',
+                'C:\\xampp\\mysql\\bin\\mysql.exe',
+            ];
 
-        if (!file_exists($mysqlPath)) {
+            $mysqlPath = 'mysql';
+            foreach ($possiblePaths as $path) {
+                if (file_exists($path)) {
+                    $mysqlPath = $path;
+                    break;
+                }
+            }
+        } else {
+            // Linux/Railway - usar del PATH
             $mysqlPath = 'mysql';
         }
 
