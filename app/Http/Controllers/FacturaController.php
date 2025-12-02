@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Factura;
 use App\Models\Paciente;
 use App\Models\Tratamiento;
+use App\Models\Log;
 use Illuminate\Http\Request;
+use PDF;
 
 class FacturaController extends Controller
 {
@@ -17,6 +19,18 @@ class FacturaController extends Controller
         $facturas = Factura::with(['paciente', 'tratamiento'])
             ->orderBy('fecha_emision', 'desc')
             ->paginate(15);
+
+        Log::registrar(
+            'READ',
+            'facturas',
+            'Acceso a lista de facturas',
+            [
+                'level' => Log::INFO,
+                'resource_type' => 'Factura',
+                'metadata' => ['total_facturas' => $facturas->total()],
+                'compliance_tag' => 'FINANCIAL'
+            ]
+        );
 
         return view('facturas.index', compact('facturas'));
     }
@@ -51,7 +65,10 @@ class FacturaController extends Controller
         // Calcular saldo pendiente
         $validated['saldo_pendiente'] = $validated['monto_total'] - $validated['monto_pagado'];
 
-        Factura::create($validated);
+        $factura = Factura::create($validated);
+        $paciente = Paciente::find($factura->paciente_id);
+
+        Log::crear('facturas', $factura->id, "Factura emitida: #{$factura->numero_factura} - {$paciente->nombre_completo} - Bs. {$factura->monto_total}", $validated, ['resource_type' => 'Factura', 'compliance_tag' => 'FINANCIAL']);
 
         return redirect()->route('facturas.index')
             ->with('success', 'Factura creada exitosamente.');
@@ -63,6 +80,19 @@ class FacturaController extends Controller
     public function show(string $id)
     {
         $factura = Factura::with(['paciente', 'tratamiento'])->findOrFail($id);
+
+        Log::registrar(
+            'READ',
+            'facturas',
+            "Visualización de factura #{$factura->numero_factura}",
+            [
+                'level' => Log::INFO,
+                'resource_type' => 'Factura',
+                'resource_id' => $id,
+                'compliance_tag' => 'FINANCIAL'
+            ]
+        );
+
         return view('facturas.show', compact('factura'));
     }
 
@@ -74,6 +104,18 @@ class FacturaController extends Controller
         $factura = Factura::findOrFail($id);
         $pacientes = Paciente::orderBy('nombre_completo')->get();
         $tratamientos = Tratamiento::orderBy('nombre')->get();
+
+        Log::registrar(
+            'READ',
+            'facturas',
+            "Acceso a formulario de edición de factura #{$factura->numero_factura}",
+            [
+                'level' => Log::INFO,
+                'resource_type' => 'Factura',
+                'resource_id' => $id,
+                'compliance_tag' => 'FINANCIAL'
+            ]
+        );
 
         return view('facturas.edit', compact('factura', 'pacientes', 'tratamientos'));
     }
@@ -98,7 +140,11 @@ class FacturaController extends Controller
         $validated['saldo_pendiente'] = $validated['monto_total'] - $validated['monto_pagado'];
 
         $factura = Factura::findOrFail($id);
+        $datosAnteriores = $factura->toArray();
         $factura->update($validated);
+        $paciente = Paciente::find($factura->paciente_id);
+
+        Log::editar('facturas', $factura->id, "Factura modificada: #{$factura->numero_factura}", $datosAnteriores, $validated, ['resource_type' => 'Factura', 'compliance_tag' => 'FINANCIAL']);
 
         return redirect()->route('facturas.show', $factura->id)
             ->with('success', 'Factura actualizada exitosamente.');
@@ -110,9 +156,26 @@ class FacturaController extends Controller
     public function destroy(string $id)
     {
         $factura = Factura::findOrFail($id);
+        $paciente = Paciente::find($factura->paciente_id);
+        $numeroFactura = $factura->numero_factura;
+        $datosAnteriores = $factura->toArray();
         $factura->delete();
+
+        Log::eliminar('facturas', $id, "Factura anulada: #{$numeroFactura}", $datosAnteriores, ['resource_type' => 'Factura', 'compliance_tag' => 'FINANCIAL']);
 
         return redirect()->route('facturas.index')
             ->with('success', 'Factura eliminada exitosamente.');
+    }
+
+    /**
+     * Imprimir/Exportar factura a PDF
+     */
+    public function print(string $id)
+    {
+        $factura = Factura::with(['paciente', 'tratamiento'])->findOrFail($id);
+
+        $pdf = PDF::loadView('facturas.print', compact('factura'));
+
+        return $pdf->download('factura_' . $factura->numero_factura . '.pdf');
     }
 }

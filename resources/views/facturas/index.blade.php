@@ -80,15 +80,24 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ route('facturas.print', $factura->id) }}" 
+                                           class="btn btn-primary" 
+                                           title="Imprimir factura"
+                                           target="_blank"
+                                           aria-label="Imprimir factura">
+                                            <i class="bi bi-printer" aria-hidden="true"></i>
+                                        </a>
                                         <a href="{{ route('facturas.show', $factura->id) }}" 
                                            class="btn btn-info" 
-                                           title="Ver detalles">
-                                            <i class="bi bi-eye"></i>
+                                           title="Ver detalles"
+                                           aria-label="Ver detalles de la factura">
+                                            <i class="bi bi-eye" aria-hidden="true"></i>
                                         </a>
                                         <a href="{{ route('facturas.edit', $factura->id) }}" 
                                            class="btn btn-warning" 
-                                           title="Editar">
-                                            <i class="bi bi-pencil"></i>
+                                           title="Editar factura"
+                                           aria-label="Editar factura">
+                                            <i class="bi bi-pencil" aria-hidden="true"></i>
                                         </a>
                                         <form action="{{ route('facturas.destroy', $factura->id) }}" 
                                               method="POST" 
@@ -96,8 +105,11 @@
                                               onsubmit="return confirm('¿Estás seguro de eliminar esta factura?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
-                                                <i class="bi bi-trash"></i>
+                                            <button type="submit" 
+                                                    class="btn btn-danger btn-sm" 
+                                                    title="Eliminar factura"
+                                                    aria-label="Eliminar factura">
+                                                <i class="bi bi-trash" aria-hidden="true"></i>
                                             </button>
                                         </form>
                                     </div>

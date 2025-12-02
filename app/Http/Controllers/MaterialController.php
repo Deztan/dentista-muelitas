@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Material;
+use App\Models\Log;
 use Illuminate\Http\Request;
 
 class MaterialController extends Controller
@@ -13,6 +14,18 @@ class MaterialController extends Controller
     public function index()
     {
         $materiales = Material::orderBy('nombre')->paginate(15);
+
+        Log::registrar(
+            'READ',
+            'materiales',
+            'Acceso a lista de materiales',
+            [
+                'level' => Log::INFO,
+                'resource_type' => 'Material',
+                'metadata' => ['total_materiales' => $materiales->total()]
+            ]
+        );
+
         return view('materiales.index', compact('materiales'));
     }
 
@@ -40,7 +53,9 @@ class MaterialController extends Controller
         ]);
 
         $validated['activo'] = true;
-        Material::create($validated);
+        $material = Material::create($validated);
+
+        Log::crear('materiales', $material->id, "Material agregado al inventario: {$material->nombre}", $validated, ['resource_type' => 'Material']);
 
         return redirect()->route('materiales.index')
             ->with('success', 'Material creado exitosamente.');
@@ -52,6 +67,18 @@ class MaterialController extends Controller
     public function show(string $id)
     {
         $material = Material::findOrFail($id);
+
+        Log::registrar(
+            'READ',
+            'materiales',
+            "Visualización de material: {$material->nombre}",
+            [
+                'level' => Log::INFO,
+                'resource_type' => 'Material',
+                'resource_id' => $id
+            ]
+        );
+
         return view('materiales.show', compact('material'));
     }
 
@@ -61,6 +88,18 @@ class MaterialController extends Controller
     public function edit(string $id)
     {
         $material = Material::findOrFail($id);
+
+        Log::registrar(
+            'READ',
+            'materiales',
+            "Acceso a formulario de edición de material: {$material->nombre}",
+            [
+                'level' => Log::INFO,
+                'resource_type' => 'Material',
+                'resource_id' => $id
+            ]
+        );
+
         return view('materiales.edit', compact('material'));
     }
 
@@ -80,7 +119,10 @@ class MaterialController extends Controller
         ]);
 
         $material = Material::findOrFail($id);
+        $datosAnteriores = $material->toArray();
         $material->update($validated);
+
+        Log::editar('materiales', $material->id, "Material actualizado: {$material->nombre}", $datosAnteriores, $validated, ['resource_type' => 'Material']);
 
         return redirect()->route('materiales.show', $material->id)
             ->with('success', 'Material actualizado exitosamente.');
@@ -92,7 +134,11 @@ class MaterialController extends Controller
     public function destroy(string $id)
     {
         $material = Material::findOrFail($id);
+        $nombreMaterial = $material->nombre;
+        $datosAnteriores = $material->toArray();
         $material->delete();
+
+        Log::eliminar('materiales', $id, "Material eliminado del inventario: {$nombreMaterial}", $datosAnteriores, ['resource_type' => 'Material']);
 
         return redirect()->route('materiales.index')
             ->with('success', 'Material eliminado exitosamente.');

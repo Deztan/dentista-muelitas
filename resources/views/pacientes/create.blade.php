@@ -3,6 +3,7 @@
 @section('title', 'Nuevo Paciente - Dentista Muelitas')
 
 @section('content')
+<!-- ESTÁNDAR: Encabezado del formulario alineado a la izquierda -->
 <div class="mb-4">
     <h1 class="h3">
         <i class="bi bi-person-plus text-primary"></i>
@@ -15,6 +16,7 @@
     <div class="col-lg-8">
         <div class="card shadow-sm">
             <div class="card-body">
+                <!-- ESTÁNDAR: Formulario con estructura definida -->
                 <form action="{{ route('pacientes.store') }}" method="POST">
                     @csrf
 
@@ -23,37 +25,46 @@
                     
                     <div class="row mb-3">
                         <div class="col-md-12">
-                            <label for="nombre_completo" class="form-label">Nombre Completo <span class="text-danger">*</span></label>
+                            <label for="nombre_completo" class="form-label">Nombre Completo <span class="text-danger" aria-label="campo obligatorio">*</span></label>
                             <input type="text" 
                                    class="form-control @error('nombre_completo') is-invalid @enderror" 
                                    id="nombre_completo" 
                                    name="nombre_completo" 
                                    value="{{ old('nombre_completo') }}" 
+                                   aria-required="true"
+                                   aria-invalid="{{ $errors->has('nombre_completo') ? 'true' : 'false' }}"
+                                   aria-describedby="{{ $errors->has('nombre_completo') ? 'nombre_completo-error' : '' }}"
                                    required>
                             @error('nombre_completo')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback" id="nombre_completo-error" role="alert">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento <span class="text-danger">*</span></label>
+                            <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento <span class="text-danger" aria-label="campo obligatorio">*</span></label>
                             <input type="date" 
                                    class="form-control @error('fecha_nacimiento') is-invalid @enderror" 
                                    id="fecha_nacimiento" 
                                    name="fecha_nacimiento" 
                                    value="{{ old('fecha_nacimiento') }}" 
+                                   aria-required="true"
+                                   aria-invalid="{{ $errors->has('fecha_nacimiento') ? 'true' : 'false' }}"
+                                   aria-describedby="{{ $errors->has('fecha_nacimiento') ? 'fecha_nacimiento-error' : '' }}"
                                    required>
                             @error('fecha_nacimiento')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback" id="fecha_nacimiento-error" role="alert">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6">
-                            <label for="genero" class="form-label">Género <span class="text-danger">*</span></label>
+                            <label for="genero" class="form-label">Género <span class="text-danger" aria-label="campo obligatorio">*</span></label>
                             <select class="form-select @error('genero') is-invalid @enderror" 
                                     id="genero" 
                                     name="genero" 
+                                    aria-required="true"
+                                    aria-invalid="{{ $errors->has('genero') ? 'true' : 'false' }}"
+                                    aria-describedby="{{ $errors->has('genero') ? 'genero-error' : '' }}"
                                     required>
                                 <option value="">Seleccionar...</option>
                                 <option value="masculino" {{ old('genero') == 'masculino' ? 'selected' : '' }}>Masculino</option>
@@ -61,7 +72,7 @@
                                 <option value="otro" {{ old('genero') == 'otro' ? 'selected' : '' }}>Otro</option>
                             </select>
                             @error('genero')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback" id="genero-error" role="alert">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
@@ -71,12 +82,15 @@
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="telefono" class="form-label">Teléfono <span class="text-danger">*</span></label>
+                            <label for="telefono" class="form-label">Teléfono <span class="text-danger" aria-label="campo obligatorio">*</span></label>
                             <input type="text" 
                                    class="form-control @error('telefono') is-invalid @enderror" 
                                    id="telefono" 
                                    name="telefono" 
-                                   value="{{ old('telefono') }}" 
+                                   value="{{ old('telefono') }}"
+                                   aria-required="true"
+                                   aria-invalid="{{ $errors->has('telefono') ? 'true' : 'false' }}"
+                                   aria-describedby="{{ $errors->has('telefono') ? 'telefono-error' : '' }}" 
                                    placeholder="70123456"
                                    required>
                             @error('telefono')
@@ -182,14 +196,14 @@
                         </div>
                     </div>
 
-                    <!-- Botones -->
+                    <!-- ESTÁNDAR: Botones alineados a la derecha con iconos a la izquierda -->
                     <hr class="my-4">
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('pacientes.index') }}" class="btn btn-secondary">
-                            <i class="bi bi-x-circle"></i> Cancelar
+                            <i class="bi bi-x-circle me-1"></i> Cancelar
                         </a>
                         <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save"></i> Guardar Paciente
+                            <i class="bi bi-save me-1"></i> Guardar Paciente
                         </button>
                     </div>
                 </form>

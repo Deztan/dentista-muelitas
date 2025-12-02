@@ -10,15 +10,17 @@ class Cita extends Model
 
     protected $fillable = [
         'paciente_id',
-        'usuario_id',
+        'odontologo_id',
+        'asistente_id',
         'tratamiento_id',
         'fecha',
         'hora',
         'duracion_minutos',
         'estado',
         'motivo',
-        'notas',
+        'observaciones',
         'recordatorio_enviado',
+        'recordatorio_fecha',
     ];
 
     protected $casts = [
@@ -31,9 +33,14 @@ class Cita extends Model
         return $this->belongsTo(Paciente::class);
     }
 
-    public function usuario()
+    public function odontologo()
     {
-        return $this->belongsTo(Usuario::class);
+        return $this->belongsTo(Usuario::class, 'odontologo_id');
+    }
+
+    public function asistente()
+    {
+        return $this->belongsTo(Usuario::class, 'asistente_id');
     }
 
     public function tratamiento()

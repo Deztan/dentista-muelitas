@@ -16,9 +16,12 @@
         <i class="bi bi-receipt text-primary"></i>
         Factura #{{ str_pad($factura->id, 4, '0', STR_PAD_LEFT) }}
     </h1>
-    <div>
+    <div class="d-flex gap-2">
+        <a href="{{ route('facturas.print', $factura->id) }}" class="btn btn-primary" target="_blank">
+            <i class="bi bi-printer me-1"></i> Imprimir Factura
+        </a>
         <a href="{{ route('facturas.edit', $factura->id) }}" class="btn btn-warning">
-            <i class="bi bi-pencil"></i> Editar
+            <i class="bi bi-pencil me-1"></i> Editar
         </a>
         <form action="{{ route('facturas.destroy', $factura->id) }}" 
               method="POST" 
@@ -27,7 +30,7 @@
             @csrf
             @method('DELETE')
             <button type="submit" class="btn btn-danger">
-                <i class="bi bi-trash"></i> Eliminar
+                <i class="bi bi-trash me-1"></i> Eliminar
             </button>
         </form>
     </div>

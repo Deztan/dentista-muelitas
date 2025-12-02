@@ -7,6 +7,7 @@ use App\Models\Paciente;
 use App\Models\Usuario;
 use App\Models\Tratamiento;
 use App\Models\Cita;
+use App\Models\Log;
 use Illuminate\Http\Request;
 
 class ExpedienteController extends Controller
@@ -20,6 +21,19 @@ class ExpedienteController extends Controller
             ->orderBy('fecha', 'desc')
             ->paginate(15);
 
+        Log::registrar(
+            'READ',
+            'expedientes',
+            'Acceso a lista de expedientes médicos',
+            [
+                'level' => Log::INFO,
+                'resource_type' => 'Expediente',
+                'metadata' => ['total_expedientes' => $expedientes->total()],
+                'is_sensitive' => true,
+                'compliance_tag' => 'MEDICAL_RECORDS'
+            ]
+        );
+
         return view('expedientes.index', compact('expedientes'));
     }
 
@@ -29,7 +43,7 @@ class ExpedienteController extends Controller
     public function create()
     {
         $pacientes = Paciente::orderBy('nombre_completo')->get();
-        $odontologos = Usuario::where('rol', 'gerente_odontologo')
+        $odontologos = Usuario::whereIn('rol', ['gerente', 'odontologo'])
             ->where('activo', true)
             ->orderBy('nombre_completo')
             ->get();
@@ -64,7 +78,10 @@ class ExpedienteController extends Controller
             'observaciones' => 'nullable|string',
         ]);
 
-        Expediente::create($validated);
+        $expediente = Expediente::create($validated);
+        $paciente = Paciente::find($expediente->paciente_id);
+
+        Log::crear('expedientes', $expediente->id, "Expediente médico creado: {$paciente->nombre_completo}", $validated, ['resource_type' => 'Expediente', 'is_sensitive' => true, 'compliance_tag' => 'MEDICAL_RECORDS']);
 
         return redirect()->route('expedientes.index')
             ->with('success', 'Expediente creado exitosamente.');
@@ -78,6 +95,19 @@ class ExpedienteController extends Controller
         $expediente = Expediente::with(['paciente', 'cita', 'tratamiento', 'odontologo', 'asistente'])
             ->findOrFail($id);
 
+        Log::registrar(
+            'READ',
+            'expedientes',
+            "Visualización de expediente médico #{$id}",
+            [
+                'level' => Log::INFO,
+                'resource_type' => 'Expediente',
+                'resource_id' => $id,
+                'is_sensitive' => true,
+                'compliance_tag' => 'MEDICAL_RECORDS'
+            ]
+        );
+
         return view('expedientes.show', compact('expediente'));
     }
 
@@ -88,7 +118,7 @@ class ExpedienteController extends Controller
     {
         $expediente = Expediente::findOrFail($id);
         $pacientes = Paciente::orderBy('nombre_completo')->get();
-        $odontologos = Usuario::where('rol', 'gerente_odontologo')
+        $odontologos = Usuario::whereIn('rol', ['gerente', 'odontologo'])
             ->where('activo', true)
             ->orderBy('nombre_completo')
             ->get();
@@ -101,6 +131,19 @@ class ExpedienteController extends Controller
             ->where('estado', 'completada')
             ->orderBy('fecha', 'desc')
             ->get();
+
+        Log::registrar(
+            'READ',
+            'expedientes',
+            "Acceso a formulario de edición de expediente médico #{$id}",
+            [
+                'level' => Log::INFO,
+                'resource_type' => 'Expediente',
+                'resource_id' => $id,
+                'is_sensitive' => true,
+                'compliance_tag' => 'MEDICAL_RECORDS'
+            ]
+        );
 
         return view('expedientes.edit', compact('expediente', 'pacientes', 'odontologos', 'asistentes', 'tratamientos', 'citas'));
     }
@@ -124,7 +167,11 @@ class ExpedienteController extends Controller
         ]);
 
         $expediente = Expediente::findOrFail($id);
+        $datosAnteriores = $expediente->toArray();
         $expediente->update($validated);
+        $paciente = Paciente::find($expediente->paciente_id);
+
+        Log::editar('expedientes', $expediente->id, "Expediente actualizado: {$paciente->nombre_completo}", $datosAnteriores, $validated, ['resource_type' => 'Expediente', 'is_sensitive' => true, 'compliance_tag' => 'MEDICAL_RECORDS']);
 
         return redirect()->route('expedientes.show', $expediente->id)
             ->with('success', 'Expediente actualizado exitosamente.');
@@ -136,7 +183,11 @@ class ExpedienteController extends Controller
     public function destroy(string $id)
     {
         $expediente = Expediente::findOrFail($id);
+        $paciente = Paciente::find($expediente->paciente_id);
+        $datosAnteriores = $expediente->toArray();
         $expediente->delete();
+
+        Log::eliminar('expedientes', $id, "Expediente eliminado: {$paciente->nombre_completo}", $datosAnteriores, ['resource_type' => 'Expediente', 'is_sensitive' => true, 'compliance_tag' => 'MEDICAL_RECORDS']);
 
         return redirect()->route('expedientes.index')
             ->with('success', 'Expediente eliminado exitosamente.');

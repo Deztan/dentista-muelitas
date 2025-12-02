@@ -31,13 +31,26 @@ class Usuario extends Authenticatable
         'password' => 'hashed', // Laravel 11 automáticamente hashea el password
     ];
 
+    // Citas como odontólogo
+    public function citasComoOdontologo()
+    {
+        return $this->hasMany(Cita::class, 'odontologo_id');
+    }
+
+    // Citas como asistente
+    public function citasComoAsistente()
+    {
+        return $this->hasMany(Cita::class, 'asistente_id');
+    }
+
+    // Todas las citas relacionadas (odontólogo o asistente)
     public function citas()
     {
-        return $this->hasMany(Cita::class);
+        return $this->citasComoOdontologo();
     }
 
     public function expedientes()
     {
-        return $this->hasMany(Expediente::class);
+        return $this->hasMany(Expediente::class, 'odontologo_id');
     }
 }

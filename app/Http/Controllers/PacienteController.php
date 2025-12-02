@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Paciente;
+use App\Models\Log;
 use Illuminate\Http\Request;
 
 class PacienteController extends Controller
@@ -14,6 +15,18 @@ class PacienteController extends Controller
     public function index()
     {
         $pacientes = Paciente::orderBy('created_at', 'desc')->paginate(10);
+
+        Log::registrar(
+            'READ',
+            'pacientes',
+            'Acceso a lista de pacientes',
+            [
+                'level' => Log::INFO,
+                'resource_type' => 'Paciente',
+                'metadata' => ['total_pacientes' => $pacientes->total()]
+            ]
+        );
+
         return view('pacientes.index', compact('pacientes'));
     }
 
@@ -46,7 +59,19 @@ class PacienteController extends Controller
             'telefono_emergencia' => 'nullable|string|max:20',
         ]);
 
-        Paciente::create($validated);
+        $paciente = Paciente::create($validated);
+
+        // Registrar en logs
+        Log::crear(
+            'pacientes',
+            $paciente->id,
+            "Paciente registrado: {$paciente->nombre_completo}",
+            $validated,
+            [
+                'resource_type' => 'Paciente',
+                'detail' => "Nuevo paciente registrado en el sistema con ID {$paciente->id}"
+            ]
+        );
 
         return redirect()->route('pacientes.index')
             ->with('success', 'Paciente creado exitosamente.');
@@ -59,6 +84,19 @@ class PacienteController extends Controller
     public function show(string $id)
     {
         $paciente = Paciente::with(['citas', 'expedientes', 'facturas'])->findOrFail($id);
+
+        Log::registrar(
+            'READ',
+            'pacientes',
+            "Visualización de paciente: {$paciente->nombre_completo}",
+            [
+                'level' => Log::INFO,
+                'resource_type' => 'Paciente',
+                'resource_id' => $id,
+                'is_sensitive' => true
+            ]
+        );
+
         return view('pacientes.show', compact('paciente'));
     }
 
@@ -69,6 +107,18 @@ class PacienteController extends Controller
     public function edit(string $id)
     {
         $paciente = Paciente::findOrFail($id);
+
+        Log::registrar(
+            'READ',
+            'pacientes',
+            "Acceso a formulario de edición de paciente: {$paciente->nombre_completo}",
+            [
+                'level' => Log::INFO,
+                'resource_type' => 'Paciente',
+                'resource_id' => $id
+            ]
+        );
+
         return view('pacientes.edit', compact('paciente'));
     }
 
@@ -93,7 +143,21 @@ class PacienteController extends Controller
         ]);
 
         $paciente = Paciente::findOrFail($id);
+        $datosAnteriores = $paciente->toArray();
         $paciente->update($validated);
+
+        // Registrar en logs
+        Log::editar(
+            'pacientes',
+            $paciente->id,
+            "Datos actualizados del paciente: {$paciente->nombre_completo}",
+            $datosAnteriores,
+            $validated,
+            [
+                'resource_type' => 'Paciente',
+                'detail' => 'Actualización de información del paciente'
+            ]
+        );
 
         return redirect()->route('pacientes.index')
             ->with('success', 'Paciente actualizado exitosamente.');
@@ -106,7 +170,22 @@ class PacienteController extends Controller
     public function destroy(string $id)
     {
         $paciente = Paciente::findOrFail($id);
+        $nombrePaciente = $paciente->nombre_completo;
+        $datosAnteriores = $paciente->toArray();
         $paciente->delete();
+
+        // Registrar en logs
+        Log::eliminar(
+            'pacientes',
+            $id,
+            "Paciente eliminado del sistema: {$nombrePaciente}",
+            $datosAnteriores,
+            [
+                'resource_type' => 'Paciente',
+                'detail' => 'Eliminación permanente del registro de paciente',
+                'is_sensitive' => true
+            ]
+        );
 
         return redirect()->route('pacientes.index')
             ->with('success', 'Paciente eliminado exitosamente.');
