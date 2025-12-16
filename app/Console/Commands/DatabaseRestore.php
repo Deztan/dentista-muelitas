@@ -180,7 +180,7 @@ class DatabaseRestore extends Command
             // Capturar la salida
             stream_get_contents($pipes[1]); // stdout (no lo necesitamos)
             $errorOutput = stream_get_contents($pipes[2]);
-            
+
             fclose($pipes[1]);
             fclose($pipes[2]);
 
@@ -194,7 +194,7 @@ class DatabaseRestore extends Command
 
         if ($return !== 0) {
             $this->error('❌ Error al restaurar el backup');
-            
+
             if (!empty($errorOutput)) {
                 $this->error('Error: ' . $errorOutput);
             }
