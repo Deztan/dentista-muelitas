@@ -2,8 +2,11 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>@yield('title', 'Dentista Muelitas')</title>
     
     <!-- Bootstrap CSS -->
@@ -34,7 +37,7 @@
         .top-header {
             background: linear-gradient(135deg, #d63384 0%, #c2185b 100%);
             color: #fff;
-            padding: 0.75rem 2rem;
+            padding: 0.75rem 1.5rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
             position: fixed;
             top: 0;
@@ -45,6 +48,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            transition: left 0.3s ease;
         }
         .top-header h5 {
             margin: 0;
@@ -52,23 +56,27 @@
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
         
-        /* Botón para toggle del sidebar en móvil */
+        /* Botón para toggle del sidebar */
         .sidebar-toggle {
-            display: none;
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            z-index: 1040;
-            background: #0d6efd;
+            background: rgba(255, 255, 255, 0.2);
             color: white;
             border: none;
             border-radius: 0.375rem;
             padding: 0.5rem 0.75rem;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            margin-right: 1rem;
+            transition: background 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .sidebar-toggle:hover {
-            background: #0a58ca;
+        .sidebar-toggle:hover,
+        .sidebar-toggle:active {
+            background: rgba(255, 255, 255, 0.3);
         }
         
         /* Sidebar ocupa toda la altura */
@@ -82,6 +90,7 @@
             width: 250px;
             overflow-y: auto;
             z-index: 1030;
+            transition: transform 0.3s ease;
         }
         .sidebar .nav-link {
             color: rgba(255, 255, 255, 0.8);
@@ -104,6 +113,7 @@
             margin-top: 50px; /* Espacio para la cabecera fija */
             padding-bottom: 50px; /* Espacio para el pie fijo */
             min-height: calc(100vh - 90px);
+            transition: margin-left 0.3s ease;
         }
         
         /* Pie de página (no cubre el sidebar) */
@@ -121,6 +131,7 @@
             align-items: center;
             justify-content: space-between;
             font-size: 0.8rem;
+            transition: left 0.3s ease;
         }
         .footer-bar .footer-left {
             display: flex;
@@ -130,6 +141,23 @@
             display: flex;
             gap: 1.5rem;
             align-items: center;
+        }
+
+        /* Desktop: permitir colapsar sidebar sin alterar diseño base */
+        @media (min-width: 769px) {
+            body.sidebar-collapsed .sidebar {
+                transform: translateX(-250px);
+            }
+            body.sidebar-collapsed .top-header {
+                left: 0;
+            }
+            body.sidebar-collapsed .main-content-wrapper {
+                margin-left: 0;
+            }
+            body.sidebar-collapsed .footer-bar {
+                left: 0;
+            }
+            /* Botón siempre visible en el header */
         }
         
         /* ACCESIBILIDAD: Tablas responsive con scroll horizontal */
@@ -146,15 +174,13 @@
         
         /* RESPONSIVE: Móvil - sidebar colapsable con overlay */
         @media (max-width: 768px) {
-            .sidebar-toggle {
-                display: block;
-            }
-            
             .sidebar {
                 transform: translateX(-100%);
                 transition: transform 0.3s ease-in-out;
-                width: 280px;
+                width: min(280px, 80vw);
+                max-width: 280px;
                 box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+                z-index: 1050;
             }
             
             .sidebar.show {
@@ -169,7 +195,9 @@
                 right: 0;
                 bottom: 0;
                 background: rgba(0,0,0,0.5);
-                z-index: 1025;
+                z-index: 1040;
+                -webkit-tap-highlight-color: transparent;
+                touch-action: none;
             }
             
             .sidebar-overlay.show {
@@ -178,7 +206,20 @@
             
             .top-header {
                 left: 0;
-                padding-left: 60px;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            .top-header h5 {
+                font-size: 1rem;
+            }
+            
+            .top-header .d-flex span {
+                display: none;
+            }
+            
+            .top-header .bi-hospital {
+                font-size: 1.2rem !important;
             }
             
             .footer-bar {
@@ -243,6 +284,10 @@
     <!-- Cabecera superior -->
     <header class="top-header">
         <div class="d-flex align-items-center">
+            <!-- Botón toggle para sidebar -->
+            <button class="sidebar-toggle" id="sidebarToggle" aria-label="Alternar menú de navegación">
+                <i class="bi bi-list" style="font-size: 1.5rem;"></i>
+            </button>
             <i class="bi bi-hospital me-2" style="font-size: 1.5rem;"></i>
             <h5>DENTISTA MUELITAS</h5>
         </div>
@@ -251,11 +296,6 @@
             <i class="bi bi-person-circle" style="font-size: 1.8rem;"></i>
         </div>
     </header>
-
-    <!-- Botón toggle para sidebar en móvil -->
-    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menú de navegación">
-        <i class="bi bi-list" style="font-size: 1.5rem;"></i>
-    </button>
     
     <!-- Overlay para cerrar sidebar en móvil -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -491,30 +531,125 @@
             const sidebarToggle = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
+            const body = document.body;
             
-            if (sidebarToggle && sidebar && overlay) {
-                // Abrir sidebar
-                sidebarToggle.addEventListener('click', function() {
-                    sidebar.classList.add('show');
-                    overlay.classList.add('show');
-                    sidebarToggle.setAttribute('aria-expanded', 'true');
-                });
+            // Función para determinar si estamos en móvil
+            function isMobile() {
+                return window.innerWidth <= 768;
+            }
+            
+            // Toggle del sidebar
+            function toggleSidebar() {
+                if (isMobile()) {
+                    // Comportamiento móvil: overlay
+                    sidebar.classList.toggle('show');
+                    overlay.classList.toggle('show');
+                    const isExpanded = sidebar.classList.contains('show');
+                    sidebarToggle.setAttribute('aria-expanded', isExpanded);
+                } else {
+                    // Comportamiento desktop: colapsar
+                    body.classList.toggle('sidebar-collapsed');
+                    const isCollapsed = body.classList.contains('sidebar-collapsed');
+                    sidebarToggle.setAttribute('aria-expanded', !isCollapsed);
+                    // Guardar preferencia
+                    localStorage.setItem('sidebarCollapsed', isCollapsed);
+                }
+            }
+            
+            if (sidebarToggle && sidebar) {
+                // Restaurar estado guardado en desktop
+                if (!isMobile() && localStorage.getItem('sidebarCollapsed') === 'true') {
+                    body.classList.add('sidebar-collapsed');
+                }
                 
-                // Cerrar sidebar al hacer click en overlay
-                overlay.addEventListener('click', function() {
-                    sidebar.classList.remove('show');
-                    overlay.classList.remove('show');
-                    sidebarToggle.setAttribute('aria-expanded', 'false');
-                });
+                // Click en el botón toggle
+                sidebarToggle.addEventListener('click', toggleSidebar);
                 
-                // Cerrar con tecla Escape (accesibilidad)
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape' && sidebar.classList.contains('show')) {
+                // Cerrar sidebar móvil al hacer click en overlay
+                if (overlay) {
+                    overlay.addEventListener('click', function() {
                         sidebar.classList.remove('show');
                         overlay.classList.remove('show');
                         sidebarToggle.setAttribute('aria-expanded', 'false');
+                    });
+                }
+                
+                // Cerrar con tecla Escape (accesibilidad)
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        if (isMobile() && sidebar.classList.contains('show')) {
+                            sidebar.classList.remove('show');
+                            overlay.classList.remove('show');
+                            sidebarToggle.setAttribute('aria-expanded', 'false');
+                        }
                     }
                 });
+                
+                // MÓVIL: Soporte de gestos táctiles (swipe) para cerrar sidebar
+                let touchStartX = 0;
+                let touchEndX = 0;
+                let touchStartY = 0;
+                let touchEndY = 0;
+                
+                sidebar.addEventListener('touchstart', function(e) {
+                    touchStartX = e.changedTouches[0].screenX;
+                    touchStartY = e.changedTouches[0].screenY;
+                }, { passive: true });
+                
+                sidebar.addEventListener('touchend', function(e) {
+                    touchEndX = e.changedTouches[0].screenX;
+                    touchEndY = e.changedTouches[0].screenY;
+                    handleSwipe();
+                }, { passive: true });
+                
+                function handleSwipe() {
+                    const swipeThreshold = 50;
+                    const xDiff = touchStartX - touchEndX;
+                    const yDiff = Math.abs(touchStartY - touchEndY);
+                    
+                    // Swipe hacia la izquierda y movimiento horizontal predominante
+                    if (isMobile() && sidebar.classList.contains('show')) {
+                        if (xDiff < -swipeThreshold && yDiff < swipeThreshold) {
+                            sidebar.classList.remove('show');
+                            overlay.classList.remove('show');
+                            sidebarToggle.setAttribute('aria-expanded', 'false');
+                        }
+                    }
+                }
+                
+                // Ajustar comportamiento al redimensionar ventana
+                let resizeTimer;
+                window.addEventListener('resize', function() {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(function() {
+                        if (isMobile()) {
+                            // En móvil, quitar clase de colapso desktop
+                            body.classList.remove('sidebar-collapsed');
+                            sidebar.classList.remove('show');
+                            overlay.classList.remove('show');
+                        } else {
+                            // En desktop, quitar clases de móvil
+                            sidebar.classList.remove('show');
+                            overlay.classList.remove('show');
+                        }
+                    }, 250);
+                });
+                
+                // Prevenir scroll del body cuando sidebar está abierto en móvil
+                const originalOverflow = body.style.overflow;
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.attributeName === 'class') {
+                            if (isMobile() && sidebar.classList.contains('show')) {
+                                body.style.overflow = 'hidden';
+                            } else {
+                                body.style.overflow = originalOverflow;
+                            }
+                        }
+                    });
+                });
+                
+                observer.observe(sidebar, { attributes: true });
             }
         })();
     </script>
