@@ -45,27 +45,16 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: left 0.3s ease-in-out;
-        }
-        
-        /* Header expandido cuando sidebar está colapsado */
-        body.sidebar-collapsed .top-header {
-            left: 0;
         }
         .top-header h5 {
             margin: 0;
             font-weight: 600;
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-            font-size: 1.1rem;
-        }
-        .top-header .user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
         
-        /* Botón para toggle del sidebar */
+        /* Botón para toggle del sidebar en móvil */
         .sidebar-toggle {
+            display: none;
             position: fixed;
             top: 10px;
             left: 10px;
@@ -77,19 +66,9 @@
             padding: 0.5rem 0.75rem;
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            transition: left 0.3s ease-in-out;
         }
         .sidebar-toggle:hover {
             background: #0a58ca;
-        }
-        
-        /* Cuando sidebar está colapsado en desktop */
-        body.sidebar-collapsed .sidebar-toggle {
-            left: 10px;
-        }
-        
-        body:not(.sidebar-collapsed) .sidebar-toggle {
-            left: 210px;
         }
         
         /* Sidebar ocupa toda la altura */
@@ -103,12 +82,6 @@
             width: 250px;
             overflow-y: auto;
             z-index: 1030;
-            transition: transform 0.3s ease-in-out;
-        }
-        
-        /* Sidebar colapsado en desktop */
-        body.sidebar-collapsed .sidebar {
-            transform: translateX(-250px);
         }
         .sidebar .nav-link {
             color: rgba(255, 255, 255, 0.8);
@@ -125,12 +98,6 @@
             margin-right: 0.5rem;
         }
         
-            transition: margin-left 0.3s ease-in-out;
-        }
-        
-        /* Contenido expandido cuando sidebar está colapsado */
-        body.sidebar-collapsed .main-content-wrapper {
-            margin-left: 0;
         /* Contenido principal ajustado */
         .main-content-wrapper {
             margin-left: 250px; /* Empieza después del sidebar */
@@ -148,12 +115,6 @@
             bottom: 0;
             left: 250px; /* Empieza después del sidebar */
             right: 0;
-            transition: left 0.3s ease-in-out;
-        }
-        
-        /* Footer expandido cuando sidebar está colapsado */
-        body.sidebar-collapsed .footer-bar {
-            left: 0;
             z-index: 1020;
             height: 40px;
             display: flex;
@@ -171,40 +132,15 @@
             align-items: center;
         }
         
-        /* Contenedor de contenido con padding responsive */
-        .main-content-wrapper .container-fluid {
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
-        
-        /* Botones responsive */
-        .btn {
-            white-space: nowrap;
-        }
-        
-        /* Cards responsive */
-        .card {
-            margin-bottom: 1rem;
-        }
-        
         /* ACCESIBILIDAD: Tablas responsive con scroll horizontal */
         @media (max-width: 992px) {
             .table-responsive {
                 border: 1px solid #dee2e6;
                 border-radius: 0.5rem;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
             }
             
             .table-responsive table {
                 font-size: 0.875rem;
-                min-width: 600px;
-            }
-            
-            /* Botones en grupos más compactos */
-            .btn-group-sm .btn {
-                padding: 0.25rem 0.5rem;
-                font-size: 0.75rem;
             }
         }
         
@@ -242,91 +178,25 @@
             
             .top-header {
                 left: 0;
-                padding: 0.5rem 1rem;
-                padding-left: 55px;
-                height: 55px;
-            }
-            
-            .top-header h5 {
-                font-size: 0.9rem;
-            }
-            
-            .top-header .user-info span {
-                font-size: 0.8rem;
-            }
-            
-            .top-header i {
-                font-size: 1.3rem !important;
+                padding-left: 60px;
             }
             
             .footer-bar {
                 left: 0;
-                font-size: 0.7rem;
-                padding: 0.4rem 0.8rem;
-                height: auto;
-                min-height: 35px;
-                flex-wrap: wrap;
-            }
-            
-            .footer-bar .footer-left {
-                font-size: 0.7rem;
+                font-size: 0.75rem;
+                padding: 0.5rem 1rem;
             }
             
             .footer-bar .footer-right {
-                gap: 0.3rem;
-                flex-wrap: wrap;
+                gap: 0.5rem;
             }
             
-            .footer-bar .footer-right span:nth-child(2),
-            .footer-bar .footer-right span:nth-child(3) {
+            .footer-bar .footer-right span:not(:first-child) {
                 display: none;
             }
             
             .main-content-wrapper {
                 margin-left: 0;
-                margin-top: 55px;
-                padding: 1rem 0.5rem;
-            }
-            
-            .main-content-wrapper .container-fluid {
-                padding-left: 0.5rem;
-                padding-right: 0.5rem;
-            }
-            
-            /* Formularios más compactos en móvil */
-            .form-label {
-                font-size: 0.875rem;
-                margin-bottom: 0.25rem;
-            }
-            
-            .form-control,
-            .form-select {
-                font-size: 0.875rem;
-                padding: 0.5rem 0.75rem;
-            }
-            
-            /* Cards más compactos */
-            .card {
-                margin-bottom: 0.75rem;
-            }
-            
-            .card-body {
-                padding: 0.75rem;
-            }
-            
-            .card-header {
-                padding: 0.5rem 0.75rem;
-            }
-            
-            /* Botones más accesibles en móvil */
-            .btn {
-                padding: 0.5rem 1rem;
-                font-size: 0.875rem;
-            }
-            
-            .btn-sm {
-                padding: 0.25rem 0.5rem;
-                font-size: 0.75rem;
             }
             
             /* Tablas en móvil: modo card */
@@ -338,13 +208,12 @@
                 display: none;
             }
             
-            .table-responsive tbody tr {
+            .table-responsive tr {
                 display: block;
                 margin-bottom: 1rem;
                 border: 1px solid #dee2e6;
                 border-radius: 0.5rem;
                 background: white;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }
             
             .table-responsive td {
@@ -352,7 +221,6 @@
                 text-align: right;
                 padding: 0.75rem;
                 border-bottom: 1px solid #f0f0f0;
-                position: relative;
             }
             
             .table-responsive td:last-child {
@@ -364,55 +232,6 @@
                 float: left;
                 font-weight: 600;
                 color: #495057;
-                font-size: 0.875rem;
-            }
-            
-            /* Botones de acción en tablas móviles */
-            .table-responsive td .btn-group {
-                display: flex;
-                gap: 0.25rem;
-                justify-content: flex-end;
-                flex-wrap: wrap;
-            }
-            
-            /* Alertas responsive */
-            .alert {
-                font-size: 0.875rem;
-                padding: 0.75rem;
-            }
-            
-            /* Títulos de página */
-            h1, .h1 {
-                font-size: 1.5rem;
-            }
-            
-            h2, .h2 {
-                font-size: 1.3rem;
-            }
-            
-            h3, .h3 {
-                font-size: 1.1rem;
-            }
-        }
-        
-        /* Estilos adicionales para accesibilidad táctil */
-        @media (max-width: 768px) and (pointer: coarse) {
-            /* Aumentar área de toque para elementos interactivos */
-            .btn,
-            .nav-link,
-            a {
-                min-height: 44px;
-                display: inline-flex;
-                align-items: center;
-            }
-            
-            .form-check-input {
-                width: 1.5rem;
-                height: 1.5rem;
-            }
-            
-            .form-check-label {
-                padding-left: 0.5rem;
             }
         }
     </style>
@@ -427,8 +246,8 @@
             <i class="bi bi-hospital me-2" style="font-size: 1.5rem;"></i>
             <h5>DENTISTA MUELITAS</h5>
         </div>
-        <div class="user-info">
-            <span class="d-none d-sm-inline me-2">{{ Auth::user()->nombre_completo }}</span>
+        <div class="d-flex align-items-center">
+            <span class="me-3">{{ Auth::user()->nombre_completo }}</span>
             <i class="bi bi-person-circle" style="font-size: 1.8rem;"></i>
         </div>
     </header>
@@ -660,61 +479,28 @@
             <span><i class="bi bi-code-square me-1"></i> Versión 1.0.0</span>
             <span><i class="bi bi-person-badge me-1"></i> Usuario: {{ Auth::user()->nombre_completo }}</span>
             <span><i class="bi bi-clock me-1"></i> {{ now()->format('H:i') }}</span>
-        </diconst isMobile = window.innerWidth <= 768;
-            
-            // Cargar estado del sidebar en desktop desde localStorage
-            if (!isMobile) {
-                const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-                if (sidebarCollapsed) {
-                    document.body.classList.add('sidebar-collapsed');
-                }
-            }
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- ACCESIBILIDAD: Script para sidebar responsive -->
+    <script>
+        (function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
             
             if (sidebarToggle && sidebar && overlay) {
-                // Toggle sidebar
+                // Abrir sidebar
                 sidebarToggle.addEventListener('click', function() {
-                    if (window.innerWidth <= 768) {
-                        // Modo móvil: mostrar/ocultar con overlay
-                        sidebar.classList.toggle('show');
-                        overlay.classList.toggle('show');
-                        const isExpanded = sidebar.classList.contains('show');
-                        sidebarToggle.setAttribute('aria-expanded', isExpanded);
-                    } else {
-                        // Modo desktop: colapsar/expandir
-                        document.body.classList.toggle('sidebar-collapsed');
-                        const isCollapsed = document.body.classList.contains('sidebar-collapsed');
-                        localStorage.setItem('sidebarCollapsed', isCollapsed);
-                        sidebarToggle.setAttribute('aria-expanded', !isCollapsed);
-                    }
+                    sidebar.classList.add('show');
+                    overlay.classList.add('show');
+                    sidebarToggle.setAttribute('aria-expanded', 'true');
                 });
                 
-                // Cerrar sidebar al hacer click en overlay (solo móvil)
-                overlay.addEventListener('click', function() {
-                    sidebar.classList.remove('show');
-                    overlay.classList.remove('show');
-                    sidebarToggle.setAttribute('aria-expanded', 'false');
-                });
-                
-                // Cerrar con tecla Escape (accesibilidad)
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape') {
-                        if (window.innerWidth <= 768 && sidebar.classList.contains('show')) {
-                            sidebar.classList.remove('show');
-                            overlay.classList.remove('show');
-                            sidebarToggle.setAttribute('aria-expanded', 'false');
-                        }
-                    }
-                });
-                
-                // Actualizar comportamiento al cambiar tamaño de ventana
-                window.addEventListener('resize', function() {
-                    if (window.innerWidth > 768) {
-                        // Cambio a desktop: limpiar clases móviles
-                        sidebar.classList.remove('show');
-                        overlay.classList.remove('show');
-                    } else {
-                        // Cambio a móvil: limpiar clase collapsed
-                        document.body.classList.remove('sidebar-collapsed
+                // Cerrar sidebar al hacer click en overlay
                 overlay.addEventListener('click', function() {
                     sidebar.classList.remove('show');
                     overlay.classList.remove('show');
